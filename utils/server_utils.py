@@ -18,7 +18,6 @@ def create_model_file(modelfile_text):
         print(f"{filename} created successfully!")
     else:
         print(f"{filename} already exists.")
-        
 
 def request_answer(prompt):
     headers = {"Content-Type" : "application/json"}
