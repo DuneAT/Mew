@@ -1,4 +1,4 @@
-class UsefulStrings :
+class UsefulStrings:
 
     modelfile_text = """FROM {model_path}
 
@@ -9,6 +9,3 @@ class UsefulStrings :
     PARAMETER stop <|im_end|>
     PARAMETER stop <|im_start|>user
     PARAMETER stop <|end|>"""
-    
-    
-    

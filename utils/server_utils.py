@@ -1,4 +1,4 @@
-import requests 
+import requests
 import json
 import os
 from dotenv import load_dotenv
@@ -10,6 +10,7 @@ load_dotenv()
 url = serverConstants.url_serve
 model_path = serverConstants.model_path
 
+
 def create_model_file(modelfile_text):
     filename = "ModelFile_" + model_path.split("/")[-2] + ".txt"
     if not os.path.exists(filename):
@@ -19,13 +20,14 @@ def create_model_file(modelfile_text):
     else:
         print(f"{filename} already exists.")
 
+
 def request_answer(prompt):
-    headers = {"Content-Type" : "application/json"}
+    headers = {"Content-Type": "application/json"}
 
     data = {
-        "model" : model_path,
-        "prompt" : prompt,
-        "stream" : False
+        "model": model_path,
+        "prompt": prompt,
+        "stream": False
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
@@ -37,14 +39,15 @@ def request_answer(prompt):
         return actual_response
     else:
         return "Erreur de serveur"
-    
+
+
 def request_answer_stream(prompt):
-    headers = {"Content-Type" : "application/json"}
+    headers = {"Content-Type": "application/json"}
 
     data = {
-        "model" : model_path,
-        "prompt" : prompt,
-        "stream" : True
+        "model": model_path,
+        "prompt": prompt,
+        "stream": True
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
