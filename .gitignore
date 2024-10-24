@@ -2,3 +2,4 @@
 .venv/*
 models/*
 chatbot-ollama/*
+ModelFile.txt
