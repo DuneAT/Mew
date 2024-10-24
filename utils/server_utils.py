@@ -2,8 +2,7 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
-from useful_strings import UsefulStrings
-from constants import ModelFileConstants, serverConstants
+from utils.constants import serverConstants
 
 load_dotenv()
 
@@ -12,13 +11,18 @@ model_path = serverConstants.model_path
 
 
 def create_model_file(modelfile_text):
-    filename = "ModelFile_" + model_path.split("/")[-2] + ".txt"
+    filename = "ModelFile_" + model_path.split("/")[-1] + ".txt"
     if not os.path.exists(filename):
         with open(filename, 'w') as file:
             file.write(modelfile_text)
         print(f"{filename} created successfully!")
     else:
         print(f"{filename} already exists.")
+
+
+def launch_ollama_server(mew_model="mew_model"):
+    modelfile = "ModelFile_" + model_path.split("/")[-2] + ".txt"
+    os.system(f"ollama create {mew_model} -f {modelfile}")
 
 
 def request_answer(prompt):
