@@ -11,7 +11,7 @@ load_dotenv()
 
 url = serverConstants.url_serve
 model_path = serverConstants.model_path
-modelfile_path = "ModelFile_" + Path(model_path).stem + ".txt"
+modelfile_path = "modelfiles/ModelFile_" + Path(model_path).stem + ".txt"
 port = 11434  # change with the port you are using, by default it is 11434 for ollama
 
 

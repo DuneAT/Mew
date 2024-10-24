@@ -3,3 +3,4 @@
 models/*
 chatbot-ollama/*
 ModelFile_*
+utils/__pycache__*
