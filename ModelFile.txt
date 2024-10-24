@@ -1,9 +1,0 @@
-FROM /media/dune/T91/DUNE/models/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf
-
-PARAMETER num_ctx 8000
-
-TEMPLATE """<|im_start|>system {{ .System }}<|im_end|><|im_start|>user {{ .Prompt }}<|im_end|><|im_start|>assistant<|im_end|>"""
-
-PARAMETER stop <|im_end|>
-PARAMETER stop <|im_start|>user
-PARAMETER stop <|end|>
