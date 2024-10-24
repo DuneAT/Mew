@@ -1,6 +1,3 @@
-modelfile_template = """<|im_start|>system {{ .System }}<|im_end|><|im_start|>user {{ .Prompt }}<|im_end|><|im_start|>assistant<|im_end|>"""
-num_ctx = 8000
-
 class UsefulStrings :
 
     modelfile_text = """FROM {model_path}

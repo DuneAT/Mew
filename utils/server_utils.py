@@ -2,16 +2,23 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
+from useful_strings import UsefulStrings
+from constants import ModelFileConstants, serverConstants
 
 load_dotenv()
 
-url = os.getenv("url_serve")
-model_path = os.getenv("model_path")
+url = serverConstants.url_serve
+model_path = serverConstants.model_path
 
-
-def launch_ollama_server():
-    
-
+def create_model_file(modelfile_text):
+    filename = "ModelFile_" + model_path.split("/")[-2] + ".txt"
+    if not os.path.exists(filename):
+        with open(filename, 'w') as file:
+            file.write(modelfile_text)
+        print(f"{filename} created successfully!")
+    else:
+        print(f"{filename} already exists.")
+        
 
 def request_answer(prompt):
     headers = {"Content-Type" : "application/json"}
