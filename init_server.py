@@ -1,4 +1,3 @@
-import os
 from utils.useful_strings import UsefulStrings
 from utils.constants import ModelFileConstants, serverConstants
 from utils.server_utils import create_model_file, launch_ollama_server
