@@ -6,6 +6,7 @@ from utils.server_utils import create_model_file, launch_ollama_server
 
 url = serverConstants.url_serve
 model_path = serverConstants.model_path
+model_path = "models/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
 
 
 num_ctx = ModelFileConstants.num_ctx
