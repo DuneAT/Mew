@@ -12,7 +12,7 @@ load_dotenv()
 url = serverConstants.url_serve
 model_path = serverConstants.model_path
 model_path = "models/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
-modelfile_path = "modelfiles/ModelFile_" + Path(model_path).stem + ".txt"
+modelfile_path = "Modelfile"
 mew_model = "mew_model"
 port = 11434  # change with the port you are using, by default it is 11434 for ollama
 
