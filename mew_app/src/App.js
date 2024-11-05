@@ -6,6 +6,7 @@ function App() {
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const chatEndRef = useRef(null);
 
   const handleSubmit = async (e) => {
@@ -42,6 +43,37 @@ function App() {
     }
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragging(false);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0]; // Get the first dropped file
+
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('http://localhost:8000/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await response.json();
+        alert(result.message);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -50,7 +82,12 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="chat-container">
+      <div
+        className={`chat-container ${dragging ? 'drag-over' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <div className="chat-history">
           {messages.map((msg, index) => (
             <div

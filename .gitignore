@@ -3,3 +3,4 @@
 models/*
 ModelFile
 __pycache__/*
+.temp/*

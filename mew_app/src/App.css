@@ -20,6 +20,11 @@
   margin: 0; /* Remove any extra margin */
 }
 
+.chat-container.drag-over {
+  background-color: #e6f7ff; /* Light blue background when dragging over */
+  border: 2px dashed #007bff; /* Dashed border */
+}
+
 .chat-history {
   display: flex;
   flex-direction: column;

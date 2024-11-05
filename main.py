@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import requests
+import os
+import shutil
+from datetime import datetime
 
 app = FastAPI()
 
@@ -12,6 +15,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create a temporary directory for storing files
+TEMP_DIR = 'temp'
+if not os.path.exists(TEMP_DIR):
+    os.makedirs(TEMP_DIR)
 
 # Your LLM function
 def request_answer(prompt):
@@ -45,3 +53,24 @@ async def ask(request: Request):
     prompt = data.get("prompt")
     response = request_answer(prompt)
     return {"response": response}
+
+# API endpoint for file upload
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...)):
+    # Create a unique session folder
+    session_folder = os.path.join(TEMP_DIR, f"session-{datetime.now().timestamp()}")
+    os.makedirs(session_folder, exist_ok=True)
+
+    file_path = os.path.join(session_folder, file.filename)
+
+    # Save the file to the session folder
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Response to the client
+    response = {"message": "File uploaded successfully", "file_path": file_path}
+
+    # Optional: Schedule the folder to be deleted after the session
+    # shutil.rmtree(session_folder) # Uncomment this line for immediate cleanup after the response
+
+    return response
