@@ -149,3 +149,17 @@ def kill_process(pid):
         print(f"Process {pid} terminated successfully.")
     except OSError as e:
         print(f"Error terminating process {pid}: {e}")
+
+def launch_backend_server():
+    """
+    Launches the backend server.
+
+    Returns:
+        None
+
+    Side Effects:
+        Executes a system command to launch the backend server.
+        Prints a success message indicating the server has been launched.
+    """
+    os.system("uvicorn main:app --reload")
+    print("Backend server launched successfully.")

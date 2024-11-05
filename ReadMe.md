@@ -42,9 +42,10 @@ Before setting up Mew, ensure you have the following:
  ```bash
    python init_server.py
 ```
-4. Launch the Application: Use Uvicorn to start the app:
+4. Launch the Application:
  ```bash
-   uvicorn run:app mew_app
+   cd mew_app
+   npm start
 ```
 
 

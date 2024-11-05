@@ -1,6 +1,6 @@
 from utils.useful_strings import UsefulStrings
 from utils.constants import ModelFileConstants, serverConstants
-from utils.server_utils import create_model_file, launch_ollama_server
+from utils.server_utils import create_model_file, launch_ollama_server, launch_backend_server
 
 # constants
 
@@ -19,3 +19,4 @@ modelfile_text = UsefulStrings.modelfile_text.format(
 
 create_model_file(modelfile_text)
 launch_ollama_server()
+launch_backend_server()
