@@ -7,3 +7,4 @@ class serverConstants:
     url_serve = "http://localhost:11434//api/generate"
     port = 11434  # need to be changed according to previous url
     model_path = "models/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+    stream = False

@@ -11,6 +11,7 @@ load_dotenv()
 
 url = serverConstants.url_serve
 model_path = serverConstants.model_path
+stream = serverConstants.stream
 model_path = "models/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
 modelfile_path = "Modelfile"
 mew_model = "mew_model"
@@ -51,45 +52,50 @@ def launch_ollama_server(modelfile_path=modelfile_path):
     print(f"Server launched successfully on port {port}.")
 
 
-def request_answer(prompt, mew_model="mew_model"):
+
+def request_answer_not_stream(prompt, mew_model=mew_model):
     """
-    Sends a request to a server with a given prompt and model, and returns the server's response.
+    Sends a request to the server with the given prompt and model, and returns the server's response.
 
     Args:
         prompt (str): The prompt to send to the server.
-        mew_model (str, optional): The model to use for the request. Defaults to "mew_model".
+        mew_model (str): The model to use for generating the response. Defaults to the value of `mew_model`.
 
     Returns:
         str: The server's response if the request is successful, otherwise "Server Error".
+
+    Raises:
+        Exception: If there is an error during the request, it prints the error message and returns "Server Error".
     """
     headers = {"Content-Type": "application/json"}
-
     data = {
-        "model": mew_model,
+        "model": mew_model,  # Replace with your actual model name
         "prompt": prompt,
         "stream": False
     }
-
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-
-    if response.status_code == 200:
-        response_text = response.text
-        data = json.loads(response_text)
-        actual_response = data["response"]
-        return actual_response
-    else:
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            response_text = response.text
+            data = json.loads(response_text)
+            actual_response = data["response"]
+            return actual_response
+        else:
+            return "Server Error"
+    except Exception as e:
+        print(f"Error during request: {e}")
         return "Server Error"
 
 
 def request_answer_stream(prompt):
     """
-    Sends a request to the server with the given prompt and returns the response.
+    Sends a request to the server with the given prompt and returns the response in a stream.
 
     Args:
         prompt (str): The prompt to send to the server.
 
-    Returns:
-        str: The server's response if the request is successful, otherwise "Server Error".
+    Yields:
+        str: Each chunk of the server's response as it arrives.
     """
     headers = {"Content-Type": "application/json"}
 
@@ -99,16 +105,37 @@ def request_answer_stream(prompt):
         "stream": True
     }
 
-    response = requests.post(url, headers=headers, data=json.dumps(data))
+    try:
+        with requests.post(url, headers=headers, data=json.dumps(data), stream=True) as response:
+            if response.status_code == 200:
+                for chunk in response.iter_lines(decode_unicode=True):
+                    if chunk:
+                        data = json.loads(chunk)
+                        actual_response = data.get("response", "")
+                        yield actual_response
+            else:
+                yield "Server Error"
+    except requests.RequestException as e:
+        yield f"Request Error: {str(e)}"
 
-    if response.status_code == 200:
-        response_text = response.text
-        data = json.loads(response_text)
-        actual_response = data["response"]
-        return actual_response
+
+def request_answer(prompt):
+    """
+    Sends a request to the server with the given prompt and returns the response.
+
+    Args:
+        prompt (str): The prompt to send to the server.
+        stream (bool): Whether to use streaming mode for the response. Default is False.
+
+    Returns:
+        str: The server's response if the request is successful, otherwise "Server Error".
+    """
+    if stream:
+        response = request_answer_stream(prompt)
+        return response
     else:
-        return "Server Error"
-
+        response = request_answer_not_stream(prompt)
+        return response
 
 def find_pid_by_port(port=11434):
     """
