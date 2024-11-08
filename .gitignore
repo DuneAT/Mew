@@ -2,5 +2,7 @@
 .venv/*
 models/*
 ModelFile
-__pycache__/*
+ModelFileEmb
+__pycache__/
 .temp/*
+*.pyc
