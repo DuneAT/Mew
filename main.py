@@ -1,11 +1,13 @@
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from utils.server_utils import request_answer
 from fastapi.staticfiles import StaticFiles
 import os
 import shutil
 from pathlib import Path
+from utils.server_utils import request_answer
+# Import the embedding function
+from utils.handle_files_utils import chunk_and_embed_file_and_store, delete_file_from_postgres
 
 app = FastAPI()
 
@@ -23,6 +25,8 @@ if not os.path.exists(TEMP_DIR):
     os.makedirs(TEMP_DIR)
 
 # API endpoint to handle requests from the frontend
+
+
 @app.post("/api/ask")
 async def ask(request: Request):
     data = await request.json()
@@ -31,6 +35,8 @@ async def ask(request: Request):
     return {"response": response}
 
 # API endpoint for file upload
+
+
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
     file_path = os.path.join(TEMP_DIR, file.filename)
@@ -39,10 +45,25 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    response = {"message": "File uploaded successfully", "file_path": file_path}
+    # Process the uploaded file: chunk, embed, and store in PostgreSQL
+    try:
+        # Assuming a default chunk size; you can adjust this if needed
+        chunk_size = 1024
+        chunk_and_embed_file_and_store(file_path, chunk_size)
+        response = {
+            "message": "File uploaded and processed successfully",
+            "file_path": file_path
+        }
+    except Exception as e:
+        # Handle any errors in processing
+        raise HTTPException(
+            status_code=500, detail=f"Error processing file: {e}")
+
     return response
 
 # New API endpoint to delete a specific file
+
+
 @app.delete("/api/delete-file")
 async def delete_file(file_name: str):
     # Search for the file in the TEMP_DIR
@@ -53,14 +74,16 @@ async def delete_file(file_name: str):
             os.remove(file_path)
             deleted = True
             break
-
+    delete_file_from_postgres(file_name)
     if deleted:
         return {"message": f"File '{file_name}' deleted successfully"}
     else:
-        raise HTTPException(status_code=404, detail=f"File '{file_name}' not found")
-    
+        raise HTTPException(
+            status_code=404, detail=f"File '{file_name}' not found")
+
 # Serve files in TEMP_DIR under the /uploads path
 app.mount("/uploads", StaticFiles(directory=TEMP_DIR), name="uploads")
+
 
 @app.get("/api/list-files")
 async def list_files():
@@ -70,8 +93,10 @@ async def list_files():
         if os.path.isfile(file_path):
             # Return the URL instead of the local file path
             extension = Path(file_name).suffix
-            files.append({"name": file_name, "url": f"/uploads/{file_name}", "type": extension.replace(".", "")})
+            files.append({"name": file_name, "url": f"/uploads/{file_name}",
+                         "type": extension.replace(".", "")})
     return JSONResponse(content={"files": files})
+
 
 @app.on_event("shutdown")
 def shutdown_event():

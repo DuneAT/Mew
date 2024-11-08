@@ -9,6 +9,8 @@ function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragging, setDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploading, setUploading] = useState(false); // Track upload state
   const chatEndRef = useRef(null);
 
   const handleSubmit = async (e) => {
@@ -62,33 +64,50 @@ function App() {
     if (file) {
       const formData = new FormData();
       formData.append('file', file);
+      setUploading(true);  // Set uploading to true for loading circle
 
-      try {
-        const response = await fetch('http://localhost:8000/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        const result = await response.json();
-        alert(result.message);
+      // Use XMLHttpRequest for upload progress tracking
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'http://localhost:8000/api/upload');
 
-        // Add the file to the uploadedFiles state with its type
-        setUploadedFiles((prev) => [
-          ...prev,
-          { name: file.name, type: file.type || 'unknown' },
-        ]);
-      } catch (error) {
-        console.error('Error uploading file:', error);
-      }
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          setUploadProgress(percentComplete);
+        }
+      };
+
+      xhr.onload = () => {
+        setUploading(false); // Turn off the loading circle once upload completes
+        if (xhr.status === 200) {
+          const result = JSON.parse(xhr.responseText);
+          alert(result.message);
+          setUploadedFiles((prev) => [
+            ...prev,
+            { name: file.name, type: file.type || 'unknown' },
+          ]);
+        } else {
+          alert('Error uploading file');
+        }
+        setUploadProgress(0);  // Reset progress bar when upload completes
+      };
+
+      xhr.onerror = () => {
+        console.error('Error uploading file');
+        setUploadProgress(0);  // Reset progress on error
+        setUploading(false);  // Turn off the loading circle on error
+      };
+
+      xhr.send(formData);
     }
   };
 
-  // Helper function to determine the icon based on file type
   const getFileIcon = (type) => {
-    if (!type) return '📁'; // Fallback to a generic icon if type is undefined
+    if (!type) return '📁';
     if (type.includes('pdf')) return '📄';
     if (type.includes('word') || type.includes('msword') || type.includes('doc')) return '📄';
     if (type.includes('text') || type.includes('plain') || type.includes('txt')) return '📝';
-    return '📁'; // Generic icon for other file types
+    return '📁';
   };
 
   const handleDeleteFile = async (fileName) => {
@@ -111,7 +130,6 @@ function App() {
     }
   };
 
-  // Scroll to the bottom when messages or loading state changes
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -123,7 +141,6 @@ function App() {
       try {
         const response = await fetch("http://localhost:8000/api/list-files");
         const result = await response.json();
-        console.log("Fetched files:", result.files); 
         setUploadedFiles(result.files);
       } catch (error) {
         console.error("Error fetching files:", error);
@@ -176,6 +193,10 @@ function App() {
           ))}
         </div>
       </div>
+      {/* Waiting circle indicator */}
+      {uploading && (
+        <div className="waiting-circle"></div>
+      )}
 
       <form onSubmit={handleSubmit} className="chat-form">
         <textarea
@@ -185,21 +206,19 @@ function App() {
           placeholder="Type your message..."
           className="chat-input"
         />
-        <button type="submit" className="submit-button">Send</button>
+        <button type="submit" className="submit-button">Envoyer</button>
       </form>
 
-      {/* Preview Modal */}
       {selectedFile && (
         <div className="preview-modal">
           <div className="preview-content">
-            <button onClick={closePreview} className="close-button">Fermer l'aperçu</button>
-            {/* Render preview based on file type */}
+            <button onClick={closePreview} className="close-button">Fermer</button>
             {selectedFile.type && selectedFile.type.includes("image") ? (
               <img src={`http://localhost:8000/uploads/${selectedFile.name}`} alt={selectedFile.name} />
             ) : selectedFile.type && selectedFile.type.includes("pdf") ? (
               <embed src={`http://localhost:8000/uploads/${selectedFile.name}`} type="application/pdf" width="100%" height="500px" />
             ) : (
-              <p>Preview not available for this file type.</p>
+              <p>L'aperçu n'est pas disponible pour ce type de fichiers.</p>
             )}
           </div>
         </div>
@@ -207,6 +226,5 @@ function App() {
     </div>
   );
 }
-
 
 export default App;

@@ -6,3 +6,8 @@ protobuf
 huggingface-hub
 python-dotenv
 ollama
+langchain-text-splitters
+psycopg2
+json
+requests
+pdfplumber

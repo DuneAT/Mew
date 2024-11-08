@@ -2,23 +2,29 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
-from pathlib import Path
 import subprocess
 import signal
 from utils.constants import serverConstants
 
 load_dotenv()
 
-url = serverConstants.url_serve
-model_path = serverConstants.model_path
 stream = serverConstants.stream
-model_path = "models/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
-modelfile_path = "Modelfile"
-mew_model = "mew_model"
-port = 11434  # change with the port you are using, by default it is 11434 for ollama
+
+port = serverConstants.port
+
+url_generate = serverConstants.url_generate
+url_embedding = serverConstants.url_embedding
+
+mew_model = serverConstants.mew_model
+model_path = serverConstants.model_path
+modelfile_path = serverConstants.modelfile_path
+
+embedding_model = serverConstants.embedding_model
+embedding_path = serverConstants.embedding_path
+modelfile_embedding_path = serverConstants.modelfile_embedding_path
 
 
-def create_model_file(modelfile_text):
+def create_model_file(modelfile_text, modelfile_path):
     """
     Creates a model file with the given text.
 
@@ -33,7 +39,7 @@ def create_model_file(modelfile_text):
     print(f"{modelfile_path} created successfully!")
 
 
-def launch_ollama_server(modelfile_path=modelfile_path):
+def launch_ollama_server():
     """
     Launches the Ollama server with the specified model file.
 
@@ -47,13 +53,12 @@ def launch_ollama_server(modelfile_path=modelfile_path):
         Executes a system command to create the Ollama server with the specified model file.
         Prints a success message indicating the server has been launched and the port it is running on.
     """
-    print(modelfile_path)
     os.system(f"ollama create {mew_model} -f {modelfile_path}")
+    os.system(f"ollama create {embedding_model} -f {modelfile_embedding_path}")
     print(f"Server launched successfully on port {port}.")
 
 
-
-def request_answer_not_stream(prompt, mew_model=mew_model):
+def request_answer_not_stream(prompt):
     """
     Sends a request to the server with the given prompt and model, and returns the server's response.
 
@@ -74,7 +79,8 @@ def request_answer_not_stream(prompt, mew_model=mew_model):
         "stream": False
     }
     try:
-        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response = requests.post(
+            url_generate, headers=headers, data=json.dumps(data))
         if response.status_code == 200:
             response_text = response.text
             data = json.loads(response_text)
@@ -106,7 +112,7 @@ def request_answer_stream(prompt):
     }
 
     try:
-        with requests.post(url, headers=headers, data=json.dumps(data), stream=True) as response:
+        with requests.post(url_generate, headers=headers, data=json.dumps(data), stream=True) as response:
             if response.status_code == 200:
                 for chunk in response.iter_lines(decode_unicode=True):
                     if chunk:
@@ -136,6 +142,37 @@ def request_answer(prompt):
     else:
         response = request_answer_not_stream(prompt)
         return response
+
+
+def request_embedding(text):
+    """
+    Sends a request to the server with the given text and returns the corresponding embedding.
+
+    Args:
+        text (str): The text to send to the server.
+
+    Returns:
+        str: The server's response if the request is successful, otherwise "Server Error".
+    """
+    headers = {"Content-Type": "application/json"}
+
+    data = {
+        "model": embedding_model,
+        "prompt": text
+    }
+
+    try:
+        response = requests.post(
+            url_embedding, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            embedding_vector = response.json().get("embedding")
+            return embedding_vector
+        else:
+            return "Server Error"
+    except Exception as e:
+        print(f"Error during request: {e}")
+        return "Server Error"
+
 
 def find_pid_by_port(port=11434):
     """
@@ -176,6 +213,7 @@ def kill_process(pid):
         print(f"Process {pid} terminated successfully.")
     except OSError as e:
         print(f"Error terminating process {pid}: {e}")
+
 
 def launch_backend_server():
     """
