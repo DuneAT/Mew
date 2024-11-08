@@ -6,11 +6,12 @@
 
 ## How It Works
 
-Mew operates with three main components:
+Mew operates with four main components:
 
 1. **Backend** - Handles core functionalities and orchestrates data flow.
 2. **Frontend** - Provides an intuitive interface for user interactions.
 3. **Ollama Server** - Powers the assistant with language model processing.
+4. **PostgreSQL DataBase** - Handle storage of files and associated embeddings.
 
 These components interact seamlessly, allowing for real-time responses from Mew.
 
@@ -24,6 +25,7 @@ Before setting up Mew, ensure you have the following:
 - **Python** installed.
 - **Visual Studio Code** (or any other IDE) for an enhanced development experience.
 - Compatible with **Linux** and **Windows** (Mac compatibility unknown).
+- A set up SQL DataBase
 
 ### Setting up the Environment
 
@@ -33,12 +35,14 @@ Before setting up Mew, ensure you have the following:
 ```bash
    pip install -r requirements.txt
    ```
+3. Add .env with Hugging Face token for models download and DataBase config
 
 ### How to Use Mew
 
-1. Download a gguf Model: Obtain a gguf model compatible with Ollama.
-2. Place Model in the ```models``` Folder: Move the downloaded model into the models directory within your repository.
-3. Start the Server: Run the following command to start the server
+1. Download a gguf version of some language model
+2. Download a gguf version of some embedding model
+3. Place Models in the ```models``` Folder within your repository.
+4. Start the Server: Run the following command to start the backend and ollama servers
  ```bash
    python init_server.py
 ```
