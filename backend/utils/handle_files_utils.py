@@ -109,7 +109,7 @@ def chunk_text_by_page(text_pages, chunk_size=1024):
 
 def embed_text(text):
     """
-    Embeds text using the Ollama server.
+    Embeds text using the Meta-Llama model.
 
     Args:
         text (str): The text to embed.
@@ -117,9 +117,13 @@ def embed_text(text):
     Returns:
         list: The embedding vector.
     """
-    response = requests.post(
-        serverConstants.url_embedding, json={"text": text})
-    return json.loads(response.text).get("embedding", [])
+    data = {
+        "text": text,
+        "model": serverConstants.embedding_model
+    }
+    response = requests.post(serverConstants.url_embedding, json=data)
+    embedding = response.json()
+    return embedding
 
 
 def chunk_and_embed_file_and_store(file_path, chunk_size=1024):
