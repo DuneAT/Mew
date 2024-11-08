@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 import subprocess
 import signal
-from utils.constants import serverConstants
+from backend.utils.constants import serverConstants
 
 load_dotenv()
 
@@ -215,16 +215,11 @@ def kill_process(pid):
         print(f"Error terminating process {pid}: {e}")
 
 
+def launch_frontend_server():
+    os.system("cd frontend && npm start")
+
+
 def launch_backend_server():
-    """
-    Launches the backend server.
-
-    Returns:
-        None
-
-    Side Effects:
-        Executes a system command to launch the backend server.
-        Prints a success message indicating the server has been launched.
-    """
-    os.system("uvicorn main:app --reload")
-    print("Backend server launched successfully.")
+    root_path = os.getcwd()
+    subprocess.Popen(["uvicorn", "backend.main:app",
+                     "--reload"], cwd=root_path)

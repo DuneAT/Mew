@@ -1,1 +1,1 @@
-FROM models/mxbai-embed-large-v1-f16.gguf
+FROM backend/models/mxbai-embed-large-v1-f16.gguf

@@ -15,8 +15,8 @@ class serverConstants:
     url_generate = "http://localhost:11434//api/generate"
     url_embedding = "http://localhost:11434/api/embeddings"
 
-    model_path = "models/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
-    embedding_path = "models/mxbai-embed-large-v1-f16.gguf"
+    model_path = "backend/models/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
+    embedding_path = "backend/models/mxbai-embed-large-v1-f16.gguf"
 
     modelfile_path = "Modelfile"
     modelfile_embedding_path = "ModelFileEmb"

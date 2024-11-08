@@ -13,6 +13,7 @@ from utils.server_utils import (
     launch_backend_server
 )
 
+
 class TestServerUtils(unittest.TestCase):
 
     @patch("builtins.open", new_callable=mock_open)
@@ -86,7 +87,8 @@ class TestServerUtils(unittest.TestCase):
 
     @patch("subprocess.check_output")
     def test_find_pid_by_port_failure(self, mock_check_output):
-        mock_check_output.side_effect = subprocess.CalledProcessError(1, 'lsof')
+        mock_check_output.side_effect = subprocess.CalledProcessError(
+            1, 'lsof')
         pid = find_pid_by_port(11434)
         self.assertIsNone(pid)
 
@@ -100,12 +102,14 @@ class TestServerUtils(unittest.TestCase):
         mock_kill.side_effect = OSError("Error")
         with self.assertLogs(level='INFO') as log:
             kill_process(1234)
-            self.assertIn("Error terminating process 1234: Error", log.output[0])
+            self.assertIn(
+                "Error terminating process 1234: Error", log.output[0])
 
     @patch("os.system")
     def test_launch_backend_server(self, mock_system):
         launch_backend_server()
         mock_system.assert_called_with("uvicorn main:app --reload")
+
 
 if __name__ == '__main__':
     unittest.main()

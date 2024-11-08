@@ -6,7 +6,7 @@ from datetime import datetime
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pathlib import Path
 
-from utils.constants import serverConstants, postgreSQLConstants
+from backend.utils.constants import serverConstants, postgreSQLConstants
 
 db_config = postgreSQLConstants.db_config
 

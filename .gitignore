@@ -1,6 +1,6 @@
 .env
 .venv/*
-models/*
+backend/models/*
 ModelFile
 ModelFileEmb
 __pycache__/
