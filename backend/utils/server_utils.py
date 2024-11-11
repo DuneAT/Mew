@@ -235,29 +235,27 @@ def find_similar_chunks(query_text, top_n=3):
     query_embedding = embed_text(query_text)
     if not query_embedding:
         raise ValueError("Failed to generate embedding for the query text.")
-    connection = psycopg2.connect(**db_config)
-    cursor = connection.cursor(cursor_factory=RealDictCursor)
-    try:
-        sql_query = f"""
-            SELECT c.chunk_text, c.chunk_number, c.file_page, f.file_name, 
-                   e.embedding <-> %s AS similarity
-            FROM embeddings e
-            JOIN chunks c ON e.chunk_id = c.id
-            JOIN files f ON c.file_id = f.id
-            ORDER BY similarity
-            LIMIT %s;
-        """
-        cursor.execute(sql_query, (query_embedding, top_n))
-        results = cursor.fetchall()
-        return results
+    embedding_str = f"[{', '.join(map(str, query_embedding['embedding']))}]"
 
-    except Exception as e:
-        print(f"Error retrieving similar chunks: {e}")
-        return []
-
-    finally:
-        cursor.close()
-        connection.close()
+    with psycopg2.connect(**db_config) as connection:
+        with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            try:
+                sql_query = """
+                    SELECT c.chunk_text, c.chunk_number, c.page, f.file_name, 
+                           e.embedding <=> %s AS similarity
+                    FROM embeddings e
+                    JOIN chunks c ON e.chunk_id = c.id
+                    JOIN files f ON c.file_id = f.id
+                    ORDER BY similarity
+                    LIMIT %s;
+                """
+                cursor.execute(
+                    sql_query, (embedding_str, top_n))
+                results = cursor.fetchall()
+                return results
+            except Exception as e:
+                print(f"Error retrieving similar chunks: {e}")
+                return []
 
 
 def find_and_format_similar_chunks(query_text, top_n=3, similarity_threshold=0.7):
@@ -277,7 +275,7 @@ def find_and_format_similar_chunks(query_text, top_n=3, similarity_threshold=0.7
         chunk for chunk in similar_chunks if chunk["similarity"] <= similarity_threshold
     ]
     formatted_text = "\n\n".join(
-        f"File: {chunk['file_name']}, Page: {chunk['file_page']}, Chunk: {chunk['chunk_number']}\n{chunk['chunk_text']}"
+        f"File: {chunk['file_name']}, Page: {chunk['page']}, Chunk: {chunk['chunk_number']}\n{chunk['chunk_text']}"
         for chunk in filtered_chunks
     )
 

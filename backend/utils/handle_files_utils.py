@@ -12,35 +12,33 @@ db_config = postgreSQLConstants.db_config
 
 
 def store_embedding_in_postgres(file_name, chunk_text, embedding, chunk_number, page):
-    """
-    Stores file, chunk, and embedding information in a PostgreSQL database.
-
-    Args:
-        file_name (str): The name of the file.
-        chunk_text (str): The text of the chunk.
-        embedding (list): The embedding vector.
-        chunk_number (int): The chunk's order in the file.
-        page (int): The page number for the chunk.
-    """
     try:
+        # Ensure embedding is a list by extracting if necessary
+        if isinstance(embedding, dict) and "embedding" in embedding:
+            embedding = embedding["embedding"]
+
+        # Establish connection
         conn = psycopg2.connect(**db_config)
         cursor = conn.cursor()
+
+        # Begin a transaction
+        conn.autocommit = False  # Disable auto-commit for transaction safety
 
         # Insert file into files table if it doesn't exist
         cursor.execute("""
             INSERT INTO files (file_name, created_at)
             VALUES (%s, %s)
-            ON CONFLICT (file_name) DO NOTHING
-            RETURNING id;
+            ON CONFLICT (file_name) DO NOTHING;
         """, (file_name, datetime.now()))
 
-        file_id = cursor.fetchone()[0] if cursor.rowcount > 0 else None
-
-        # If the file already exists, retrieve its ID
-        if not file_id:
-            cursor.execute(
-                "SELECT id FROM files WHERE file_name = %s;", (file_name,))
-            file_id = cursor.fetchone()[0]
+        # Fetch the file_id for the given file_name
+        cursor.execute(
+            "SELECT id FROM files WHERE file_name = %s;", (file_name,))
+        row = cursor.fetchone()
+        if row:
+            file_id = row[0]
+        else:
+            raise ValueError(f"File '{file_name}' not found in database.")
 
         # Insert chunk into chunks table with page number
         cursor.execute("""
@@ -51,19 +49,20 @@ def store_embedding_in_postgres(file_name, chunk_text, embedding, chunk_number, 
 
         chunk_id = cursor.fetchone()[0]
 
-        # Insert embedding into embeddings table
+        # Insert embedding as an array if the column type is FLOAT8[]
         cursor.execute("""
             INSERT INTO embeddings (chunk_id, embedding, created_at)
             VALUES (%s, %s, %s);
-        """, (chunk_id, embedding, datetime.now()))
+        """, (chunk_id, embedding, datetime.now()))  # Insert embedding directly if it's now a list
 
+        # Commit the transaction
         conn.commit()
         print(
             f"Chunk {chunk_number} embedding for file '{file_name}' (page {page}) successfully stored.")
 
-    except Exception as e:
-        print(f"Error storing embedding: {e}")
-
+    except (ValueError, psycopg2.Error) as e:
+        conn.rollback()  # Rollback if any exception occurs
+        print(f"Error: {e}")
     finally:
         cursor.close()
         conn.close()
@@ -118,8 +117,8 @@ def embed_text(text):
         list: The embedding vector.
     """
     data = {
-        "text": text,
-        "model": serverConstants.embedding_model
+        "model": serverConstants.embedding_model,
+        "prompt": text
     }
     response = requests.post(serverConstants.url_embedding, json=data)
     embedding = response.json()
@@ -137,8 +136,8 @@ def chunk_and_embed_file_and_store(file_path, chunk_size=1024):
     text_pages = extract_text_from_pdf(file_path)
     chunks = chunk_text_by_page(text_pages, chunk_size)
     file_name = Path(file_path).name
-
     for i, (chunk, page) in enumerate(chunks):
+        print(chunk)
         embedding = embed_text(chunk)
         store_embedding_in_postgres(file_name, chunk, embedding, i, page)
 

@@ -15,7 +15,7 @@ def extract_text_from_pdf(file_path):
     return text_pages
 
 
-def chunk_text_by_page(text_pages, chunk_size=1024):
+def chunk_text_by_page(text_pages, chunk_size=2500):
     """
     Splits text from each page into chunks.
     """
