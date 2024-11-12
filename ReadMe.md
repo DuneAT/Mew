@@ -21,6 +21,8 @@ These components interact seamlessly, allowing for real-time responses from Mew.
 Before setting up Mew, ensure you have the following:
 
 - A **processor** capable of running gguf models (refer to relevant webpages for model compatibility).
+- A **PostgreSQL 16** database for your files uploads, with pgvector extension.
+- **Node.js** installed.
 - **Python** installed.
 - **Visual Studio Code** (or any other IDE) for an enhanced development experience.
 - Compatible with **Linux** and **Windows** (Mac compatibility unknown).
@@ -40,13 +42,8 @@ Before setting up Mew, ensure you have the following:
 2. Place Model in the ```models``` Folder: Move the downloaded model into the models directory within your repository.
 3. Start the Server: Run the following command to start the server
  ```bash
-   python init_server.py
-```
-4. Launch the Application:
- ```bash
-   cd mew_app
-   npm start
-```
+   python server_setup.py
+   ```
 
 
 Once the setup is complete, Mew will be up and running. Enjoy your new personal assistant!
