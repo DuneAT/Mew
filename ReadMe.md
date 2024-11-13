@@ -41,9 +41,9 @@ Before setting up Mew, ensure you have the following:
 1. Download a gguf Model: Obtain a gguf model compatible with Ollama.
 2. Place Model in the ```models``` Folder: Move the downloaded model into the models directory within your repository.
 3. Start the Server: Run the following command to start the server
+
  ```bash
    python server_setup.py
    ```
-
 
 Once the setup is complete, Mew will be up and running. Enjoy your new personal assistant!
