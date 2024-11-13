@@ -1,0 +1,274 @@
+/* Main App Container */
+.app-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  /* Chat Container */
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    height: 80vh;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  /* Drag-over Styling */
+  .chat-container.drag-over {
+    background-color: #e6f7ff;
+    border: 2px dashed #007bff;
+  }
+  
+  .uploaded-file {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  
+  .file-icon {
+    font-size: 20px;
+    margin-right: 8px;
+  }
+  
+  .file-name {
+    font-size: 16px;
+    flex-grow: 1;
+  }
+  
+  .delete-icon {
+    font-size: 18px;
+    color: #ff4d4f;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  .delete-icon:hover {
+    color: #d9363e;
+  }
+  
+  /* Chat History */
+  .chat-history {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Scrollbar Customization */
+  .chat-history {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  
+  .chat-history::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+  }
+  
+  .chat-history:hover::-webkit-scrollbar {
+    background-color: #f1f1f1;
+  }
+  
+  .chat-history::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 4px;
+  }
+  
+  .chat-history:hover::-webkit-scrollbar-thumb {
+    background-color: #888;
+  }
+  
+  .chat-history::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+  }
+  
+  /* Chat Message Bubbles */
+  .chat-message {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+  
+  /* User Message Styling */
+  .user-message {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    align-self: flex-end;
+    border-top-right-radius: 0;
+    text-align: right;
+    margin-left: auto;
+  }
+  
+  /* AI Message Styling */
+  .ai-message {
+    background-color: #e2e3e5;
+    color: #495057;
+    align-self: flex-start;
+    border-top-left-radius: 0;
+    margin-right: auto;
+  }
+  
+  /* Shared Chat Message Styling */
+  .user-message,
+  .ai-message {
+    flex: 0 1 auto;
+    width: auto;
+  }
+  
+  /* Loading Dots Animation */
+  .loading-dots {
+    display: inline-block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .loading-dots span {
+    animation: dots 1.4s infinite steps(3, end);
+  }
+  
+  .loading-dots span:nth-child(1) {
+    animation-delay: 0s;
+  }
+  
+  .loading-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  
+  .loading-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  
+  @keyframes dots {
+    0%, 20% {
+      color: transparent;
+    }
+    40% {
+      color: #555;
+    }
+    100% {
+      color: transparent;
+    }
+  }
+  
+  /* Chat Form */
+  .chat-form {
+    display: flex;
+    flex-direction: row;
+    padding: 10px 20px;
+    background-color: #ffffff;
+    border-top: 1px solid #ddd;
+    width: 80%;
+    box-sizing: border-box;
+  }
+  
+  /* Chat Input */
+  .chat-input {
+    flex-grow: 1;
+    min-height: 40px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    resize: none;
+  }
+  
+  .chat-input:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  
+  /* Submit Button */
+  .submit-button {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 10px;
+    flex-shrink: 0;
+    transition: background-color 0.3s;
+  }
+  
+  .submit-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .preview-content {
+    background: white;
+    padding: 20px; /* Remove padding */
+    border-radius: 8px;
+    width: 90%;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* Ensures content fills the modal */
+  }
+  
+  .close-button {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    align-self: flex-end;
+    margin-bottom: 10px;
+  }
+  
+  .preview-content iframe, .preview-content embed {
+    width: 100%; /* Make the PDF viewer fill the modal */
+    height: 100%;
+    border: none;
+  }
+  
+  .file-name {
+    color: #333; /* Default color for file names */
+    cursor: pointer; /* Change the cursor to a pointer on hover */
+    transition: color 0.3s ease; /* Smooth transition for color change */
+  }
+  
+  .file-name:hover {
+    color: #007bff; /* Change to your desired color on hover */
+  }
+  
+  .waiting-circle {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
