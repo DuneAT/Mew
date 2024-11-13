@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import './App.css'; // Importing the CSS file
+import './App.css'; 
 
 function App() {
   const [prompt, setPrompt] = useState('');
@@ -68,7 +68,6 @@ function App() {
       formData.append('file', file);
       setUploading(true);  // Set uploading to true for loading circle
 
-      // Use XMLHttpRequest for upload progress tracking
       const xhr = new XMLHttpRequest();
       xhr.open('POST', 'http://localhost:8000/api/upload');
 
@@ -119,7 +118,7 @@ function App() {
       });
   
       if (response.ok) {
-        setUploadedFiles((prev) => prev.filter((file) => file.name !== fileName)); // Remove from UI
+        setUploadedFiles((prev) => prev.filter((file) => file.name !== fileName)); 
         const result = await response.json();
         alert(result.message);
       } else {

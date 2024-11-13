@@ -4,6 +4,7 @@ from backend.api import ask_routes, file_routes
 from backend.utils import constants
 import atexit
 import psycopg2
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -18,6 +19,8 @@ app.add_middleware(
 # Include API routers
 app.include_router(ask_routes.router)
 app.include_router(file_routes.router)
+
+app.mount("/uploads", StaticFiles(directory="temp"), name="uploads")
 
 # Database configuration (replace with your actual configuration)
 db_config = constants.postgreSQLConstants.db_config
