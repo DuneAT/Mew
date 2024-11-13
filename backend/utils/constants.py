@@ -32,7 +32,7 @@ class postgreSQLConstants:
     user = os.getenv('POSTGRES_USER')
     password = os.getenv('POSTGRES_PASSWORD')
     host = 'localhost'
-    port = 5432
+    port = 5433
     db_config = {
         'dbname': dbname,
         'user': user,
