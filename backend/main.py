@@ -25,8 +25,6 @@ app.mount("/uploads", StaticFiles(directory="temp"), name="uploads")
 # Database configuration (replace with your actual configuration)
 db_config = constants.postgreSQLConstants.db_config
 
-# Function to delete data from PostgreSQL on server shutdown
-
 
 def delete_temp_data():
     try:

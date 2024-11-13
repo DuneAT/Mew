@@ -20,9 +20,7 @@ def store_embedding_in_postgres(file_name, chunk_text, embedding, chunk_number, 
         # Establish connection
         conn = psycopg2.connect(**db_config)
         cursor = conn.cursor()
-
-        # Begin a transaction
-        conn.autocommit = False  # Disable auto-commit for transaction safety
+        conn.autocommit = False
 
         # Insert file into files table if it doesn't exist
         cursor.execute("""
@@ -49,13 +47,12 @@ def store_embedding_in_postgres(file_name, chunk_text, embedding, chunk_number, 
 
         chunk_id = cursor.fetchone()[0]
 
-        # Insert embedding as an array if the column type is FLOAT8[]
+        # Insert embedding as an array because column type is vector from pgvector extension
         cursor.execute("""
             INSERT INTO embeddings (chunk_id, embedding, created_at)
             VALUES (%s, %s, %s);
         """, (chunk_id, embedding, datetime.now()))  # Insert embedding directly if it's now a list
 
-        # Commit the transaction
         conn.commit()
         print(
             f"Chunk {chunk_number} embedding for file '{file_name}' (page {page}) successfully stored.")
