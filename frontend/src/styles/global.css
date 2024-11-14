@@ -1,6 +1,7 @@
 /* Main App Container */
 .app-container {
-    display: flex;
+    display:flex;
+    width: 100%;
     justify-content: center;
     align-items: center;
     flex-direction: column;

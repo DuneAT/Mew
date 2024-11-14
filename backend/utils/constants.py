@@ -40,3 +40,18 @@ class postgreSQLConstants:
         'host': host,
         'port': port
     }
+
+
+class legifrance_postgreSQLConstants:
+    dbname = 'legifrance'
+    user = os.getenv('POSTGRES_USER')
+    password = os.getenv('POSTGRES_PASSWORD')
+    host = 'localhost'
+    port = 5433
+    db_config = {
+        'dbname': dbname,
+        'user': user,
+        'password': password,
+        'host': host,
+        'port': port
+    }

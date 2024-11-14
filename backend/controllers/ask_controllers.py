@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException
-from backend.services.ask_services import request_answer
+from backend.utils.server_utils import request_answer, request_answer_with_retrieval
 
 
 async def handle_ask_request(request: Request):
@@ -14,3 +14,17 @@ async def handle_ask_request(request: Request):
         return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def ask(request: Request):
+    data = await request.json()
+    prompt = data.get("prompt")
+    response = request_answer(prompt)
+    return {"response": response}
+
+
+async def ask_rag(request: Request):
+    data = await request.json()
+    prompt = data.get("prompt")
+    response = request_answer_with_retrieval(prompt)
+    return {"response": response}

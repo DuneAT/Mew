@@ -1,5 +1,5 @@
 from backend.utils.constants import postgreSQLConstants
-from backend.utils.handle_files_utils import embed_text
+from backend.utils.pdf_utils import embed_text
 from psycopg2.extras import RealDictCursor
 import psycopg2
 import requests
@@ -10,7 +10,7 @@ import subprocess
 import signal
 from backend.utils.constants import serverConstants
 
-load_dotenv()
+# Constants
 
 db_config = postgreSQLConstants.db_config
 
@@ -29,6 +29,10 @@ embedding_model = serverConstants.embedding_model
 embedding_path = serverConstants.embedding_path
 modelfile_embedding_path = serverConstants.modelfile_embedding_path
 
+load_dotenv()
+
+
+# Server launch functions
 
 def create_model_file(modelfile_text, modelfile_path):
     """
@@ -64,121 +68,17 @@ def launch_ollama_server():
     print(f"Server launched successfully on port {port}.")
 
 
-def request_answer_not_stream(prompt):
-    """
-    Sends a request to the server with the given prompt and model, and returns the server's response.
-
-    Args:
-        prompt (str): The prompt to send to the server.
-        mew_model (str): The model to use for generating the response. Defaults to the value of `mew_model`.
-
-    Returns:
-        str: The server's response if the request is successful, otherwise "Server Error".
-
-    Raises:
-        Exception: If there is an error during the request, it prints the error message and returns "Server Error".
-    """
-    headers = {"Content-Type": "application/json"}
-    data = {
-        "model": mew_model,  # Replace with your actual model name
-        "prompt": prompt,
-        "stream": False
-    }
-    try:
-        response = requests.post(
-            url_generate, headers=headers, data=json.dumps(data))
-        if response.status_code == 200:
-            response_text = response.text
-            data = json.loads(response_text)
-            actual_response = data["response"]
-            return actual_response
-        else:
-            return "Server Error"
-    except Exception as e:
-        print(f"Error during request: {e}")
-        return "Server Error"
+def launch_frontend_server():
+    os.system("cd frontend && npm start")
 
 
-def request_answer_stream(prompt):
-    """
-    Sends a request to the server with the given prompt and returns the response in a stream.
-
-    Args:
-        prompt (str): The prompt to send to the server.
-
-    Yields:
-        str: Each chunk of the server's response as it arrives.
-    """
-    headers = {"Content-Type": "application/json"}
-
-    data = {
-        "model": mew_model,
-        "prompt": prompt,
-        "stream": True
-    }
-
-    try:
-        with requests.post(url_generate, headers=headers, data=json.dumps(data), stream=True) as response:
-            if response.status_code == 200:
-                for chunk in response.iter_lines(decode_unicode=True):
-                    if chunk:
-                        data = json.loads(chunk)
-                        actual_response = data.get("response", "")
-                        yield actual_response
-            else:
-                yield "Server Error"
-    except requests.RequestException as e:
-        yield f"Request Error: {str(e)}"
+def launch_backend_server():
+    root_path = os.getcwd()
+    subprocess.Popen(["uvicorn", "backend.main:app",
+                     "--reload"], cwd=root_path)
 
 
-def request_answer(prompt):
-    """
-    Sends a request to the server with the given prompt and returns the response.
-
-    Args:
-        prompt (str): The prompt to send to the server.
-        stream (bool): Whether to use streaming mode for the response. Default is False.
-
-    Returns:
-        str: The server's response if the request is successful, otherwise "Server Error".
-    """
-    if stream:
-        response = request_answer_stream(prompt)
-        return response
-    else:
-        response = request_answer_not_stream(prompt)
-        return response
-
-
-def request_embedding(text):
-    """
-    Sends a request to the server with the given text and returns the corresponding embedding.
-
-    Args:
-        text (str): The text to send to the server.
-
-    Returns:
-        str: The server's response if the request is successful, otherwise "Server Error".
-    """
-    headers = {"Content-Type": "application/json"}
-
-    data = {
-        "model": embedding_model,
-        "prompt": text
-    }
-
-    try:
-        response = requests.post(
-            url_embedding, headers=headers, data=json.dumps(data))
-        if response.status_code == 200:
-            embedding_vector = response.json().get("embedding")
-            return embedding_vector
-        else:
-            return "Server Error"
-    except Exception as e:
-        print(f"Error during request: {e}")
-        return "Server Error"
-
+# Server shutdown functions
 
 def find_pid_by_port(port=11434):
     """
@@ -219,6 +119,38 @@ def kill_process(pid):
         print(f"Process {pid} terminated successfully.")
     except OSError as e:
         print(f"Error terminating process {pid}: {e}")
+
+
+# RAG model functions
+
+def request_embedding(text):
+    """
+    Sends a request to the server with the given text and returns the corresponding embedding.
+
+    Args:
+        text (str): The text to send to the server.
+
+    Returns:
+        str: The server's response if the request is successful, otherwise "Server Error".
+    """
+    headers = {"Content-Type": "application/json"}
+
+    data = {
+        "model": embedding_model,
+        "prompt": text
+    }
+
+    try:
+        response = requests.post(
+            url_embedding, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            embedding_vector = response.json().get("embedding")
+            return embedding_vector
+        else:
+            return "Server Error"
+    except Exception as e:
+        print(f"Error during request: {e}")
+        return "Server Error"
 
 
 def find_similar_chunks(query_text, top_n=3):
@@ -318,6 +250,94 @@ def format_prompt(question, retrieved_chunks, language="fr"):
     return prompt
 
 
+# Server request functions
+
+def request_answer_not_stream(prompt):
+    """
+    Sends a request to the server with the given prompt and model, and returns the server's response.
+
+    Args:
+        prompt (str): The prompt to send to the server.
+        mew_model (str): The model to use for generating the response. Defaults to the value of `mew_model`.
+
+    Returns:
+        str: The server's response if the request is successful, otherwise "Server Error".
+
+    Raises:
+        Exception: If there is an error during the request, it prints the error message and returns "Server Error".
+    """
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "model": mew_model,  # Replace with your actual model name
+        "prompt": prompt,
+        "stream": False
+    }
+    try:
+        response = requests.post(
+            url_generate, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            response_text = response.text
+            data = json.loads(response_text)
+            actual_response = data["response"]
+            return actual_response
+        else:
+            return "Server Error"
+    except Exception as e:
+        print(f"Error during request: {e}")
+        return "Server Error"
+
+
+def request_answer_stream(prompt):
+    """
+    Sends a request to the server with the given prompt and returns the response in a stream.
+
+    Args:
+        prompt (str): The prompt to send to the server.
+
+    Yields:
+        str: Each chunk of the server's response as it arrives.
+    """
+    headers = {"Content-Type": "application/json"}
+
+    data = {
+        "model": mew_model,
+        "prompt": prompt,
+        "stream": True
+    }
+
+    try:
+        with requests.post(url_generate, headers=headers, data=json.dumps(data), stream=True) as response:
+            if response.status_code == 200:
+                for chunk in response.iter_lines(decode_unicode=True):
+                    if chunk:
+                        data = json.loads(chunk)
+                        actual_response = data.get("response", "")
+                        yield actual_response
+            else:
+                yield "Server Error"
+    except requests.RequestException as e:
+        yield f"Request Error: {str(e)}"
+
+
+def request_answer(prompt):
+    """
+    Sends a request to the server with the given prompt and returns the response.
+
+    Args:
+        prompt (str): The prompt to send to the server.
+        stream (bool): Whether to use streaming mode for the response. Default is False.
+
+    Returns:
+        str: The server's response if the request is successful, otherwise "Server Error".
+    """
+    if stream:
+        response = request_answer_stream(prompt)
+        return response
+    else:
+        response = request_answer_not_stream(prompt)
+        return response
+
+
 def request_answer_with_retrieval(question, similarity_threshold=0.7, top_n=3):
     """
     Performs a similarity search for relevant chunks, formats a prompt, and sends a request to the server.
@@ -334,13 +354,3 @@ def request_answer_with_retrieval(question, similarity_threshold=0.7, top_n=3):
         question, top_n=top_n, similarity_threshold=similarity_threshold)
     prompt = format_prompt(question, retrieved_chunks)
     return request_answer(prompt)
-
-
-def launch_frontend_server():
-    os.system("cd frontend && npm start")
-
-
-def launch_backend_server():
-    root_path = os.getcwd()
-    subprocess.Popen(["uvicorn", "backend.main:app",
-                     "--reload"], cwd=root_path)
