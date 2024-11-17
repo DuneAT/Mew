@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException
-from backend.utils.server_utils import request_answer, request_answer_with_retrieval
+from backend.utils.server_utils import request_answer, request_answer_with_retrieval, request_answer_with_retrieval_legifrance
 
 
 async def handle_ask_request(request: Request):
@@ -27,4 +27,11 @@ async def ask_rag(request: Request):
     data = await request.json()
     prompt = data.get("prompt")
     response = request_answer_with_retrieval(prompt)
+    return {"response": response}
+
+
+async def ask_legifrance(request: Request):
+    data = await request.json()
+    prompt = data.get("prompt")
+    response = request_answer_with_retrieval_legifrance(prompt)
     return {"response": response}

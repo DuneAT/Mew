@@ -14,7 +14,7 @@ const HomePage = () => {
             <div style={styles.buttonContainer}>
                 <button style={styles.button} onClick={() => handleNavigate('/conversation')}>Conversation</button>
                 <button style={styles.button} onClick={() => handleNavigate('/rag')}>RAG (Retrieval-Augmented Generation)</button>
-                <button style={styles.button} onClick={() => handleNavigate('/synthesize')}>Document Synthesis</button>
+                <button style={styles.button} onClick={() => handleNavigate('/legifrance')}>RAG Legifrance</button>
                 <button style={styles.button} onClick={() => handleNavigate('/other-tool')}>Other Tool</button>
             </div>
         </div>

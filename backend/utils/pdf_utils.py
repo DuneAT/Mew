@@ -2,7 +2,7 @@ import pdfplumber
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pathlib import Path
 import requests
-from backend.utils.db_helpers import store_embedding_in_postgres
+from backend.utils.db_utils import store_embedding_in_postgres
 from backend.utils.constants import serverConstants, postgreSQLConstants
 
 # Functions to process PDF files

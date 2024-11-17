@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/Homepage';
 import Conversation from './tools/Conversation/conversationPage';
 import RAG from './tools/rag/ragPage';
+import LegiPage from './tools/legifrance_search/LegiPage';
 import NotFound from './pages/NotFound';
 import './styles/global.css';
 
@@ -15,6 +16,7 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/conversation" element={<Conversation />} />
                     <Route path="/rag" element={<RAG />} />
+                    <Route path="/legifrance" element={<LegiPage />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
                 {/* Optional: Footer component */}

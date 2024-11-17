@@ -10,7 +10,7 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [setUploadProgress] = useState(0);
   const chatEndRef = useRef(null);
 
   const apiUrl = uploadedFiles.length > 0 ? 'http://localhost:8000/api/ask_rag' : 'http://localhost:8000/api/ask';

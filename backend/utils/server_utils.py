@@ -1,4 +1,4 @@
-from backend.utils.constants import postgreSQLConstants
+from backend.utils.constants import serverConstants, postgreSQLConstants, legifrance_postgreSQLConstants
 from backend.utils.pdf_utils import embed_text
 from psycopg2.extras import RealDictCursor
 import psycopg2
@@ -8,11 +8,11 @@ import os
 from dotenv import load_dotenv
 import subprocess
 import signal
-from backend.utils.constants import serverConstants
 
 # Constants
 
 db_config = postgreSQLConstants.db_config
+db_config_legifrance = legifrance_postgreSQLConstants.db_config
 
 stream = serverConstants.stream
 
@@ -153,6 +153,44 @@ def request_embedding(text):
         return "Server Error"
 
 
+def find_similar_chunks_legifrance(query_text, top_n=3):
+    """
+    Finds the top N most similar chunks to the query text.
+
+    Args:
+        query_text (str): The query for which similar chunks are searched.
+        top_n (int): The number of similar chunks to retrieve. Default is 3.
+
+    Returns:
+        list: A list of dictionaries containing the top N similar chunks with their details.
+    """
+    query_embedding = embed_text(query_text)
+    if not query_embedding:
+        raise ValueError("Failed to generate embedding for the query text.")
+    embedding_str = f"[{', '.join(map(str, query_embedding['embedding']))}]"
+
+    with psycopg2.connect(**db_config_legifrance) as connection:
+        with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            try:
+                sql_query = """
+                    SELECT c.chunk_text, c.article_id, a.title, a.section, 
+                           c.embedding <=> %s AS similarity
+                    FROM chunks c
+					JOIN articles a ON c.article_id = a.article_id
+					WHERE embedding IS NOT NULL
+                    
+                    ORDER BY similarity ASC
+					LIMIT %s;
+                """
+                cursor.execute(
+                    sql_query, (embedding_str, top_n))
+                results = cursor.fetchall()
+                return results
+            except Exception as e:
+                print(f"Error retrieving similar chunks: {e}")
+                return []
+
+
 def find_similar_chunks(query_text, top_n=3):
     """
     Finds the top N most similar chunks to the query text.
@@ -214,6 +252,30 @@ def find_and_format_similar_chunks(query_text, top_n=3, similarity_threshold=0.7
     return formatted_text
 
 
+def find_and_format_similar_chunks_legifrance(query_text, top_n=3, similarity_threshold=0.7):
+    """
+    Finds the top N similar chunks to a query, filters by similarity, and formats them for language model input.
+
+    Args:
+        query_text (str): The query text for similarity search.
+        top_n (int): The number of top similar chunks to retrieve. Default is 3.
+        similarity_threshold (float): The maximum similarity score to include. Default is 0.7.
+
+    Returns:
+        str: A formatted string of the relevant chunks for language model input.
+    """
+    similar_chunks = find_similar_chunks_legifrance(query_text, top_n=top_n)
+    filtered_chunks = [
+        chunk for chunk in similar_chunks if chunk["similarity"] <= similarity_threshold
+    ]
+    formatted_text = "\n\n".join(
+        f"File: {chunk['section'] + chunk['title']} \n{chunk['chunk_text']}"
+        for chunk in filtered_chunks
+    )
+
+    return formatted_text
+
+
 def format_prompt(question, retrieved_chunks, language="fr"):
     """
     Formats the prompt for the model based on the presence of retrieved chunks.
@@ -250,7 +312,43 @@ def format_prompt(question, retrieved_chunks, language="fr"):
     return prompt
 
 
+def format_prompt_legifrance(question, retrieved_chunks, language="fr"):
+    """
+    Formats the prompt for the model based on the presence of retrieved chunks.
+
+    Args:
+        question (str): The question to be answered by the model.
+        retrieved_chunks (str): The retrieved chunks formatted for the language model, or an empty string if none are found.
+        language (str): Language for the prompt template. Options are "en" (English) and "fr" (French).
+
+    Returns:
+        str: The formatted prompt for the model.
+    """
+    template_RAG_en = (
+        "You are a knowledgeable assistant for a lawyer. Based on the following information extracted from articles of the french law: {knowledge}, "
+        "please answer the following question with the highest accuracy and based strictly on the provided knowledge: {question}."
+    )
+    template_RAG_fr = (
+        "Vous êtes un assistant juridique expérimenté pour un avocat. Sur la base des extraits d'articles suivants : {knowledge}, "
+        "répondez à la question suivante avec la plus grande précision et en vous fondant strictement sur les connaissances fournies : {question}."
+    )
+    if language == "fr":
+        template = template_RAG_fr
+    else:
+        template = template_RAG_en
+
+    if retrieved_chunks:
+        prompt = template.format(knowledge=retrieved_chunks, question=question)
+    else:
+        if language == "fr":
+            prompt = f"Vous êtes un assistant juridique pour un avocat de renom. Répondez à la question suivante le plus précisément possible : {question}."
+        else:
+            prompt = f"You are a lawyer assistant. Answer the following question the most accurately you can: {question}."
+
+    return prompt
+
 # Server request functions
+
 
 def request_answer_not_stream(prompt):
     """
@@ -353,4 +451,23 @@ def request_answer_with_retrieval(question, similarity_threshold=0.7, top_n=3):
     retrieved_chunks = find_and_format_similar_chunks(
         question, top_n=top_n, similarity_threshold=similarity_threshold)
     prompt = format_prompt(question, retrieved_chunks)
+    return request_answer(prompt)
+
+
+def request_answer_with_retrieval_legifrance(question, similarity_threshold=0.7, top_n=8):
+    """
+    Performs a similarity search for relevant chunks, formats a prompt, and sends a request to the server.
+
+    Args:
+        question (str): The question to be answered by the model.
+        similarity_threshold (float): The maximum similarity score to include. Default is 0.7.
+        top_n (int): The number of similar chunks to retrieve. Default is 3.
+
+    Returns:
+        str or generator: The server's response if non-streaming, or a generator for streaming.
+    """
+    retrieved_chunks = find_and_format_similar_chunks_legifrance(
+        question, top_n=top_n, similarity_threshold=similarity_threshold)
+    prompt = format_prompt_legifrance(
+        question, retrieved_chunks, language="fr")
     return request_answer(prompt)

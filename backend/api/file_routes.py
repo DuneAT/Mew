@@ -5,6 +5,8 @@ import os
 import shutil
 from backend.controllers.file_controllers import list_files, upload_file, delete_file
 
+TEMP_DIR = 'temp'
+
 router = APIRouter()
 
 

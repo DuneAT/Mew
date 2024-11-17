@@ -1,6 +1,6 @@
 from fastapi import HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
-from backend.utils.db_helpers import delete_file_from_postgres
+from backend.utils.db_utils import delete_file_from_postgres
 from backend.utils.pdf_utils import chunk_and_embed_file_and_store
 from pathlib import Path
 import os
